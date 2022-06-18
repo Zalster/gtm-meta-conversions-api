@@ -53,48 +53,83 @@ The request Parameters supported are
 /*Server Event Data*/
 
 `x-fb-event-name` - Event Name
+
 `x-fb-event-time` - Timestamp in seconds
+
 `x-fb-event-source-url` - Url for where the event appeared.
+
 `x-fb-event-id` - Event ID used for deduplication
+
 `x-fb-action-source` - Action source (default: website)
+
 `x-fb-opt-out` - Boolean - user opt out
+
 `x-fb-data-processing-options` - Data processing options
+
 `x-fb-data-processiong-options-country` - Data processing options country
+
 `x-fb-data-processing-options-state` - Data processing options state
+
 
 /*Custom Data*/ 
 
 `x-fb-content-category` - String -  Content category
+
 `x-fb-content-ids` - Array - Content Ids
+
 `x-fb-content-name` - String - Content name
+
 `x-fb-contents` -  Array of objects - Contents 
+
 `x-fb-currency` - String - currency
+
 `x-fb-delivery-category` - String - delivery category
+
 `x-fb-num-items` - String - num items
+
 `x-fb-order-id` - String - order id
+
 `x-fb-predicted-ltv` - Float - predicted itv
+
 `x-fb-search-string` - String - search string
+
 `x-fb-status` - string - status
+
 `x-fb-value` - float - Value
 
 
 /*User Data*/
 
 `x-fb-email` 
-`x-fb-phone-number`  
+
+`x-fb-phone-number`
+
 `x-fb-first-name` 
+
 `x-fb-last-name`
+
 `x-fb-city`
+
 `x-fb-state`
+
 `x-fb-zip-code` 
-`x-fb-country`    
+
+`x-fb-country`  
+
 `x-fb-external-id`
-`x-fb-subscription-id` 
+
+`x-fb-subscription-id`
+
 `x-fb-lead-id`
+
 `x-fb-fbp`
+
 `x-fb-fbc`    
+
 `x-fb-client-ip-address`
+
 `x-fb-client-user-agent`  
+
 
 ## Links
 [_Meta Conversions API_](https://ads.tiktok.com/marketing_api/docs?id=1701890979375106)
