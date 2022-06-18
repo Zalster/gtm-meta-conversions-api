@@ -1,0 +1,5 @@
+homepage: "https://zalster.com"
+documentation: "https://github.com/Zalster/gtm-meta-conversions-api"
+versions:
+  - sha: aaff742664297cb9aec337b8696726629fb3c516
+    changeNotes: Release of Tag Template
