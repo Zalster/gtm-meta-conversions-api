@@ -25,23 +25,41 @@ The Tag parses all GA4 Client Events into Meta Events.
 ### Mapped Events (GA4 => Meta)
 
   `add_payment_info - AddPaymentInfo`
+  
   `add_to_cart - AddToCart`
+  
   `add_to_wishlist - AddToWishlist`
+  
   `complete_registration - CompleteRegistration`
+  
   `contact - Contact`
+  
   `customize_product - CustomizeProduct`
+  
   `donate - Donate`
+  
   `find_location - FindLocation`
+  
   `begin_checkout - InitiateCheckout`
+  
   `generate_lead - Lead`
+  
   `page_view - PageView`
+  
   `purchase - Purchase`
+  
   `schedule - Schedule`
+  
   `search - Search`
+  
   `start_trial - StartTrial`
+  
   `submit_application - SubmitApplication`
+  
   `subscribe - Subscribe`
+  
   `view_item - ViewContent`
+  
 
 *Note: /Some of the events above are not GA4 standard events but are added to simplify the setup/*
 
