@@ -1,4 +1,4 @@
-*# Meta Conversions API Tag for Google Tag Manager (Server-side)*
+# Meta Conversions API Tag for Google Tag Manager (Server-side)
 The Meta Conversions API Tag is a Server-to-Server (S2S) integration that allows you to share website and app visitor events directly to the graph api. Data that is shared via the Conversions API is processed similar to information shared via other face data integration business tools, like the Meta pixel.
 
 This Tag uses the standard GA4 Client and parses GA4 input into Meta data and sends it through the Conversions API.
@@ -11,15 +11,18 @@ If you are using other user data parameters  than the GA4 standard then you can 
 
 /This tag also supports to send from other sources/
 
-*## Input variables*
+## Current Version
+This tag currently runs Graph API Version **v14.0**
+
+## Input variables
 * Meta Pixel ID
 * Meta Conversions API Token 
 * (optional) Test Event Code
 
-*## GA4 Standard Events Mapping*
+## GA4 Standard Events Mapping
 The Tag parses all GA4 Client Events into Meta Events. 
 
-*### Mapped Events (GA4 => Meta)*
+### Mapped Events (GA4 => Meta)
 
   `add_payment_info - AddPaymentInfo`
   `add_to_cart - AddToCart`
@@ -42,7 +45,7 @@ The Tag parses all GA4 Client Events into Meta Events.
 
 *Note: /Some of the events above are not GA4 standard events but are added to simplify the setup/*
 
-*## Other ways to use the Tag*
+## Other ways to use the Tag
 If you are not using GA4 standard events you can still use this tag to send data to Meta.
 
 The request Parameters supported are
@@ -93,8 +96,7 @@ The request Parameters supported are
 `x-fb-client-ip-address`
 `x-fb-client-user-agent`  
 
-
-*## Links*
+## Links
 [_Meta Conversions API_](https://ads.tiktok.com/marketing_api/docs?id=1701890979375106)
 
 [_Google Tag Manager Server Side_](https://developers.google.com/tag-platform/tag-manager/server-side)
