@@ -1,5 +1,7 @@
 homepage: "https://zalster.com"
 documentation: "https://github.com/Zalster/gtm-meta-conversions-api"
 versions:
+  - sha: 26dc6ff7a4b449ecfeb12e3bd0ab4d1d0043c9ef
+    changeNotes: Added Extra logic to some Advanced Matching parameters and other updates
   - sha: aaff742664297cb9aec337b8696726629fb3c516
     changeNotes: Release of Tag Template
