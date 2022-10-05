@@ -242,6 +242,7 @@ const makeString = require('makeString');
 const makeInteger = require('makeInteger');
 const makeNumber = require('makeNumber');
 const makeTableMap = require('makeTableMap');
+const Object = require('Object');
 const sendHttpRequest = require('sendHttpRequest');
 const setCookie = require('setCookie');
 const sha256Sync = require('sha256Sync');
@@ -305,7 +306,7 @@ const getContentCategoryFromItems = (eventName, items) => {
 const getContentsFromItems = (items) => {
   if (items.length === 0) return;
   return items
-    .filter(item => item.item_price >= 0 || item.price >= 0)
+    .filter(item => item.item_price > 0 || item.price > 0)
     .map((item) => {
     let item_id = item.item_id || item.id;
     let content = {
@@ -314,6 +315,19 @@ const getContentsFromItems = (items) => {
     };
     return content;
   });
+};
+
+const getCustomCdParams = (eventData, customData) => {
+  const suffix = 'x-fb-cd-custom-';
+  Object.keys(eventData).map((eventName) => {
+    if (eventName.indexOf(suffix) === 0) {
+      let key = eventName.replace(suffix, '').split('-').replace('_');
+      if (key.length > 0) {
+        customData[key] = eventData[eventName];
+      }
+    }
+  });
+  return customData;
 };
 
 const generateCookieValue = (value) => {
@@ -366,6 +380,7 @@ const isSubDomain = (host, pageUrl) => {
 };
 
 const isOptOut = (tagData, eventData) => {
+  const gcs = eventData['x-ga-gcs'];
   if (!tagData.advancedMatchingSettings) {
     return true;
   }
@@ -374,6 +389,10 @@ const isOptOut = (tagData, eventData) => {
   }
   if (getType(eventData.opt_out) !== 'undefined') {
     return eventData.opt_out === true || eventData.opt_out === 'true';
+  }
+  if (getType(gcs) !== 'undefined') {
+    // measurement protocol v2 consent settings for ad_storage
+    return gcs !== 'G111' && gcs !== 'G110';
   }
   return false;
 };
@@ -401,25 +420,28 @@ serverEventData.data_processing_options_state = eventData['x-fb-data_processing_
 
 // Custom Data
 let customData = {};
-customData.content_category = eventData['x-fb-content-category'] || getContentCategoryFromItems(eventName, items);
-customData.content_ids = eventData['x-fb-content-ids'];
-customData.content_name = eventData['x-fb-content-name'] || getContentNameFromItems(eventName, items);
-customData.contents = eventData['x-fb-contents'] || getContentsFromItems(items);
-customData.currency = eventData['x-fb-currency'] || eventData.currency;
-customData.delivery_category = eventData['x-fb-delivery-category'];
-customData.num_items = eventData['x-fb-num-items'] || getNumItemsFromItems(eventName, items);
-customData.order_id = eventData['x-fb-order-id'] || eventData.transaction_id;
-customData.predicted_ltv = eventData['x-fb-predicted-ltv'];
-customData.search_string = eventData['x-fb-search-string'] || eventData.search_term;
-customData.status = eventData['x-fb-status'];
-customData.value = eventData['x-fb-value'] || eventData.value || getValueFromItems(eventName, items);
+customData.content_category = eventData['x-fb-cd-content-category'] || getContentCategoryFromItems(eventName, items);
+customData.content_ids = eventData['x-fb-cd-content-ids'];
+customData.content_name = eventData['x-fb-cd-content-name'] || getContentNameFromItems(eventName, items);
+customData.contents = eventData['x-fb-cd-contents'] || getContentsFromItems(items);
+customData.currency = eventData['x-fb-cd-currency'] || eventData.currency;
+customData.delivery_category = eventData['x-fb-cd-delivery-category'];
+customData.num_items = eventData['x-fb-cd-num-items'] || getNumItemsFromItems(eventName, items);
+customData.order_id = eventData['x-fb-cd-order-id'] || eventData.transaction_id;
+customData.predicted_ltv = eventData['x-fb-cd-predicted-ltv'];
+customData.search_string = eventData['x-fb-cd-search-string'] || eventData.search_term;
+customData.status = eventData['x-fb-cd-status'];
+customData.value = eventData['x-fb-cd-value'] || eventData.value || getValueFromItems(eventName, items);
+
+// populate customData object with custom params
+customData = getCustomCdParams(eventData, customData);
 
 serverEventData.custom_data = customData;
 
 // User Data
 let userData = {};
-userData.client_ip_address = eventData['x-fb-ip-address'] || eventData.ip_adress || getRemoteAddress();
-userData.client_user_agent = eventData['x-fb-user-agent'] || eventData.user_agent;
+userData.client_ip_address = eventData['x-fb-ud-ip-address'] || eventData.ip_adress || getRemoteAddress();
+userData.client_user_agent = eventData['x-fb-ud-user-agent'] || eventData.user_agent;
 
 if (!optOut) {
   
@@ -427,42 +449,49 @@ if (!optOut) {
   const userAddressData = ga4UserData.address ? ga4UserData.address[0] : {};
   const manualAdvancedMatchingParams = data.advancedMatchingParams ? makeTableMap(data.advancedMatchingParams, 'advancedMatchingParam', 'advancedMatchingValue') : {};
   
-  let fbp = eventData['x-fb-fbp'] || getCookieValues('_fbp')[0],
-      fbc = eventData['x-fb-fbc'] || getCookieValues('_fbc')[0];
+  let fbp = manualAdvancedMatchingParams.fbp || eventData['x-fb-ck-fbp'] || eventData['x-fb-fbp'] || getCookieValues('_fbp')[0],
+      fbc = manualAdvancedMatchingParams.fbc || eventData['x-fb-ck-fbc'] || eventData['x-fb-fbc'] || getCookieValues('_fbc')[0];
+  
+  userData.client_ip_address = manualAdvancedMatchingParams.client_ip_address || userData.client_ip_address;
+  
+  userData.client_user_agent = manualAdvancedMatchingParams.client_user_agent || userData.client_user_agent;
    
-  userData.em = hashSHA256(manualAdvancedMatchingParams.em || eventData['x-fb-email'] || ga4UserData.email_address || ga4UserData.email);
-  userData.ph = hashSHA256(manualAdvancedMatchingParams.ph || eventData['x-fb-phone-number'] || ga4UserData.phone_number || ga4UserData.phone);
-  userData.fn = hashSHA256(manualAdvancedMatchingParams.fn || eventData['x-fb-first-name'] || userAddressData.first_name);
-  userData.ln = hashSHA256(manualAdvancedMatchingParams.ln || eventData['x-fb-last-name'] || userAddressData.last_name);
-  userData.zp = hashSHA256(manualAdvancedMatchingParams.zp || eventData['x-fb-zip-code'] || userAddressData.postal_code || userAddressData.zip_code);
-  userData.external_id = eventData['x-fb-external-id'] || userData.user_id;
-  userData.subscription_id = eventData['x-fb-subscription_id'];
-  userData.fb_login_id = eventData['x-fb-login_id'];
-  userData.lead_id = eventData['x-fb-lead-id'];
+  userData.em = hashSHA256(manualAdvancedMatchingParams.em || eventData['x-fb-ud-email'] || ga4UserData.email_address || ga4UserData.email);
+  userData.ph = hashSHA256(manualAdvancedMatchingParams.ph || eventData['x-fb-ud-phone-number'] || ga4UserData.phone_number || ga4UserData.phone);
+  userData.fn = hashSHA256(manualAdvancedMatchingParams.fn || eventData['x-fb-ud-first-name'] || userAddressData.first_name);
+  userData.ln = hashSHA256(manualAdvancedMatchingParams.ln || eventData['x-fb-ud-last-name'] || userAddressData.last_name);
+  userData.db = hashSHA256(manualAdvancedMatchingParams.db || eventData['x-fb-ud-date-of-birth'] || ga4UserData.date_of_birth);
+  userData.ge = hashSHA256(manualAdvancedMatchingParams.ge || eventData['x-fb-ud-gender'] || ga4UserData.gender);
+  userData.zp = hashSHA256(manualAdvancedMatchingParams.zp || eventData['x-fb-ud-zip-code'] || userAddressData.postal_code || userAddressData.zip_code);
+  userData.external_id = manualAdvancedMatchingParams.external_id || eventData['x-fb-ud-external-id'] || userData.user_id;
+  userData.subscription_id = manualAdvancedMatchingParams.subscription_id || eventData['x-fb-ud-subscription_id'];
+  userData.fb_login_id = manualAdvancedMatchingParams.fb_login_id || eventData['x-fb-ud-login_id'];
+  userData.lead_id = manualAdvancedMatchingParams.lead_id || eventData['x-fb-ud-lead-id'];
   userData.fbp = fbp;
   userData.fbc = fbc;
   
   // Extra logic for Country Code
-  let country = manualAdvancedMatchingParams.country || eventData['x-fb-country'] || userAddressData.country;
+  let country = manualAdvancedMatchingParams.country || eventData['x-fb-ud-country'] || userAddressData.country;
   if (getType(country) === 'string') {
+    country = country.toLowerCase();
     if (COUNTRY_CODES.indexOf(country) !== -1) {
       userData.country = hashSHA256(country);
     }
   } 
   
   // Extra logic for State
-  let state = manualAdvancedMatchingParams.st || eventData['x-fb-state'] || userAddressData.region;
+  let state = manualAdvancedMatchingParams.st || eventData['x-fb-ud-state'] || userAddressData.region;
   if (getType(state) === 'string') {
     if (state.length > 0) {
-      userData.st = hashSHA256(state);
+      userData.st = hashSHA256(state.split(' ').join('').split('-').join(''));
     }
   }
   
   // Extra logic for City
-  let city = manualAdvancedMatchingParams.ct || eventData['x-fb-city'] || userAddressData.city;
+  let city = manualAdvancedMatchingParams.ct || eventData['x-fb-ud-city'] || userAddressData.city;
   if (getType(city) === 'string') {
     if (city.length > 0) {
-      userData.ct = hashSHA256(city);
+      userData.ct = hashSHA256(city.split(' ').join('').split('-').join(''));
     }
   }
   
