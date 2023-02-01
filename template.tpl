@@ -1,12 +1,4 @@
-﻿___TERMS_OF_SERVICE___
-
-By creating or modifying this file you agree to Google Tag Manager's Community
-Template Gallery Developer Terms of Service available at
-https://developers.google.com/tag-manager/gallery-tos (or such other URL as
-Google may provide), as modified from time to time.
-
-
-___INFO___
+﻿___INFO___
 
 {
   "type": "TAG",
@@ -397,6 +389,15 @@ const isOptOut = (tagData, eventData) => {
   return false;
 };
 
+const mergeObj = (obj, obj2) => {
+  for (let key in obj2) {
+    if (obj2.hasOwnProperty(key)) {
+      obj[key] = obj2[key];
+    }
+  }
+  return obj;
+};
+
 // Event Data
 const eventData = getAllEventData();
 
@@ -422,6 +423,7 @@ serverEventData.data_processing_options_state = eventData['x-fb-data_processing_
 let customData = {};
 customData.content_category = eventData['x-fb-cd-content-category'] || getContentCategoryFromItems(eventName, items);
 customData.content_ids = eventData['x-fb-cd-content-ids'];
+customData.content_type = eventData['x-fb-cd-content-type'];
 customData.content_name = eventData['x-fb-cd-content-name'] || getContentNameFromItems(eventName, items);
 customData.contents = eventData['x-fb-cd-contents'] || getContentsFromItems(items);
 customData.currency = eventData['x-fb-cd-currency'] || eventData.currency;
@@ -445,10 +447,13 @@ userData.client_user_agent = eventData['x-fb-ud-user-agent'] || eventData.user_a
 
 if (!optOut) {
   
-  const ga4UserData = eventData['x-ga-mp2-user_properties'] || eventData.user_properties || eventData.user_data || {};
-  const userAddressData = ga4UserData.address ? ga4UserData.address[0] : {};
   const manualAdvancedMatchingParams = data.advancedMatchingParams ? makeTableMap(data.advancedMatchingParams, 'advancedMatchingParam', 'advancedMatchingValue') : {};
-  
+
+  const mp2UserProperties = eventData['x-ga-mp2-user_properties'] || {};
+  const userProerties = mergeObj(mp2UserProperties, eventData.user_properties || {});
+  const eventUserData = mergeObj(userProerties, eventData.user_data || {});
+  const ga4UserData = mergeObj(eventUserData, eventUserData.address ? eventUserData.address : {});
+ 
   let fbp = manualAdvancedMatchingParams.fbp || eventData['x-fb-ck-fbp'] || eventData['x-fb-fbp'] || getCookieValues('_fbp')[0],
       fbc = manualAdvancedMatchingParams.fbc || eventData['x-fb-ck-fbc'] || eventData['x-fb-fbc'] || getCookieValues('_fbc')[0];
   
@@ -458,11 +463,11 @@ if (!optOut) {
    
   userData.em = hashSHA256(manualAdvancedMatchingParams.em || eventData['x-fb-ud-email'] || ga4UserData.email_address || ga4UserData.email);
   userData.ph = hashSHA256(manualAdvancedMatchingParams.ph || eventData['x-fb-ud-phone-number'] || ga4UserData.phone_number || ga4UserData.phone);
-  userData.fn = hashSHA256(manualAdvancedMatchingParams.fn || eventData['x-fb-ud-first-name'] || userAddressData.first_name);
-  userData.ln = hashSHA256(manualAdvancedMatchingParams.ln || eventData['x-fb-ud-last-name'] || userAddressData.last_name);
+  userData.fn = hashSHA256(manualAdvancedMatchingParams.fn || eventData['x-fb-ud-first-name'] || ga4UserData.first_name);
+  userData.ln = hashSHA256(manualAdvancedMatchingParams.ln || eventData['x-fb-ud-last-name'] || ga4UserData.last_name);
   userData.db = hashSHA256(manualAdvancedMatchingParams.db || eventData['x-fb-ud-date-of-birth'] || ga4UserData.date_of_birth);
   userData.ge = hashSHA256(manualAdvancedMatchingParams.ge || eventData['x-fb-ud-gender'] || ga4UserData.gender);
-  userData.zp = hashSHA256(manualAdvancedMatchingParams.zp || eventData['x-fb-ud-zip-code'] || userAddressData.postal_code || userAddressData.zip_code);
+  userData.zp = hashSHA256(manualAdvancedMatchingParams.zp || eventData['x-fb-ud-zip-code'] || ga4UserData.postal_code || ga4UserData.zip_code);
   userData.external_id = manualAdvancedMatchingParams.external_id || eventData['x-fb-ud-external-id'] || userData.user_id;
   userData.subscription_id = manualAdvancedMatchingParams.subscription_id || eventData['x-fb-ud-subscription_id'];
   userData.fb_login_id = manualAdvancedMatchingParams.fb_login_id || eventData['x-fb-ud-login_id'];
@@ -471,7 +476,7 @@ if (!optOut) {
   userData.fbc = fbc;
   
   // Extra logic for Country Code
-  let country = manualAdvancedMatchingParams.country || eventData['x-fb-ud-country'] || userAddressData.country;
+  let country = manualAdvancedMatchingParams.country || eventData['x-fb-ud-country'] || ga4UserData.country;
   if (getType(country) === 'string') {
     country = country.toLowerCase();
     if (COUNTRY_CODES.indexOf(country) !== -1) {
@@ -480,7 +485,7 @@ if (!optOut) {
   } 
   
   // Extra logic for State
-  let state = manualAdvancedMatchingParams.st || eventData['x-fb-ud-state'] || userAddressData.region;
+  let state = manualAdvancedMatchingParams.st || eventData['x-fb-ud-state'] || ga4UserData.region;
   if (getType(state) === 'string') {
     if (state.length > 0) {
       userData.st = hashSHA256(state.split(' ').join('').split('-').join(''));
@@ -488,7 +493,7 @@ if (!optOut) {
   }
   
   // Extra logic for City
-  let city = manualAdvancedMatchingParams.ct || eventData['x-fb-ud-city'] || userAddressData.city;
+  let city = manualAdvancedMatchingParams.ct || eventData['x-fb-ud-city'] || ga4UserData.city;
   if (getType(city) === 'string') {
     if (city.length > 0) {
       userData.ct = hashSHA256(city.split(' ').join('').split('-').join(''));
