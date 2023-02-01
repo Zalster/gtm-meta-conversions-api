@@ -1,6 +1,8 @@
-homepage: "https://zalster.com"
-documentation: "https://github.com/Zalster/gtm-meta-conversions-api"
+homepage: 'https://zalster.com'
+documentation: 'https://github.com/Zalster/gtm-meta-conversions-api'
 versions:
+  - sha: a573290f3464c0eae447803a15648b95e95394d3
+    changeNotes: Updated logic for how to handle user data
   - sha: dd22919462540f378b50e976d57a5271e17f7198
     changeNotes: Major updatest to the template, now easier to migrate from official tag
   - sha: 26dc6ff7a4b449ecfeb12e3bd0ab4d1d0043c9ef
