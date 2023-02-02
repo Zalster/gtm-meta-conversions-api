@@ -1,4 +1,12 @@
-﻿___INFO___
+﻿___TERMS_OF_SERVICE___
+
+By creating or modifying this file you agree to Google Tag Manager's Community
+Template Gallery Developer Terms of Service available at
+https://developers.google.com/tag-manager/gallery-tos (or such other URL as
+Google may provide), as modified from time to time.
+
+
+___INFO___
 
 {
   "type": "TAG",
@@ -392,7 +400,9 @@ const isOptOut = (tagData, eventData) => {
 const mergeObj = (obj, obj2) => {
   for (let key in obj2) {
     if (obj2.hasOwnProperty(key)) {
-      obj[key] = obj2[key];
+      if (['null', 'undefined', 'function'].indexOf(getType(obj2[key])) === -1) {
+        obj[key] = obj2[key];
+      }
     }
   }
   return obj;
@@ -452,7 +462,7 @@ if (!optOut) {
   const mp2UserProperties = eventData['x-ga-mp2-user_properties'] || {};
   const userProerties = mergeObj(mp2UserProperties, eventData.user_properties || {});
   const eventUserData = mergeObj(userProerties, eventData.user_data || {});
-  const ga4UserData = mergeObj(eventUserData, eventUserData.address ? eventUserData.address : {});
+  const ga4UserData = mergeObj(eventUserData, eventUserData.address ? eventUserData.address[0] : {});
  
   let fbp = manualAdvancedMatchingParams.fbp || eventData['x-fb-ck-fbp'] || eventData['x-fb-fbp'] || getCookieValues('_fbp')[0],
       fbc = manualAdvancedMatchingParams.fbc || eventData['x-fb-ck-fbc'] || eventData['x-fb-fbc'] || getCookieValues('_fbc')[0];
