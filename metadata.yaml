@@ -1,6 +1,8 @@
 homepage: 'https://zalster.com'
 documentation: 'https://github.com/Zalster/gtm-meta-conversions-api'
 versions:
+  - sha: 7b44f64d40cbc47306a1fc1ee4754c26a6631199
+    changeNotes: New merge function that handles null and undefined values
   - sha: a573290f3464c0eae447803a15648b95e95394d3
     changeNotes: Updated logic for how to handle user data
   - sha: dd22919462540f378b50e976d57a5271e17f7198
